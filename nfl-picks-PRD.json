@@ -1,0 +1,79 @@
+{
+  "title": "NFL Weekly Picks Web App (2025–2026 Season)",
+  "purpose": "Develop a web app allowing users to make weekly NFL game predictions, track accuracy throughout the season, and view a leaderboard.",
+  "target_users": [
+    "NFL fans who enjoy pick'em contests",
+    "Users who want to compete via leaderboard"
+  ],
+  "features": {
+    "registration_login": {
+      "description": "Secure registration and login",
+      "details": ["Password hashing", "JWT or session auth", "Optional OAuth"]
+    },
+    "nfl_schedule": {
+      "description": "Complete 2025–2026 NFL season schedule",
+      "details": ["18-week regular season", "Display teams, logos, records"]
+    },
+    "weekly_picks": {
+      "description": "Submit weekly picks Tuesday–Thursday",
+      "open_time": "Tuesday 6:00 AM CT",
+      "deadline": "Thursday 12:00 PM CT",
+      "partial_saves": true,
+      "incomplete_warning": true
+    },
+    "auto_scoring": {
+      "description": "Automatic scoring from Thursday to Sunday",
+      "active_window": "Thursday 7:00 PM – Sunday 11:59 PM CT",
+      "correct_points": 1,
+      "incorrect_points": 0,
+      "data_source": "Sports data API"
+    },
+    "leaderboard": {
+      "description": "Live leaderboard of users",
+      "fields": ["Username", "Total correct picks"],
+      "sort_by": "total_correct"
+    },
+    "data_persistence": {
+      "description": "Store user data and game data persistently",
+      "database": ["PostgreSQL", "MySQL", "MongoDB"],
+      "backup_frequency": "Weekly"
+    },
+    "user_experience": {
+      "description": "Responsive, intuitive UI",
+      "features": ["Mobile support", "Pick alerts", "Optional emails"]
+    }
+  },
+  "technical_stack": {
+    "frontend": ["React", "Vue", "Svelte"],
+    "styling": "Tailwind CSS",
+    "backend": ["Node.js", "Django", "FastAPI"],
+    "database": ["PostgreSQL", "MySQL", "MongoDB"],
+    "auth": ["JWT", "Sessions"],
+    "hosting": ["Vercel", "Netlify", "Render", "Fly.io", "AWS"],
+    "cron_jobs": true,
+    "sports_api": "3rd-party sports data provider"
+  },
+  "database_schema": {
+    "users": ["id", "username", "email", "password_hash", "created_at"],
+    "picks": ["id", "user_id", "week_number", "game_id", "selected_team", "is_correct", "submitted_at"],
+    "games": ["id", "week_number", "home_team", "away_team", "home_score", "away_score", "game_time"],
+    "leaderboard_view": ["user_id", "username", "total_correct"]
+  },
+  "timeline": [
+    {"date": "2025-08-15", "milestone": "Auth + Frontend MVP"},
+    {"date": "2025-08-25", "milestone": "NFL Schedule + UI"},
+    {"date": "2025-09-01", "milestone": "Scoring + API"},
+    {"date": "2025-09-05", "milestone": "Testing + Leaderboard"},
+    {"date": "2025-09-08", "milestone": "Launch before Week 1"}
+  ],
+  "risks": [
+    {"risk": "NFL API reliability", "mitigation": "Use reliable, SLA-backed provider"},
+    {"risk": "Deadline confusion", "mitigation": "User alerts and email notifications"},
+    {"risk": "Traffic/load spikes", "mitigation": "Use caching and batched jobs"}
+  ],
+  "success_criteria": [
+    "All users can register and submit picks",
+    "Accurate weekly scoring",
+    "Persistent data storage throughout the season"
+  ]
+}

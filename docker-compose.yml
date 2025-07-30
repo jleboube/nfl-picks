@@ -1,0 +1,65 @@
+
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=${API_URL:-http://localhost:5000}
+    depends_on:
+      - backend
+    networks:
+      - nfl-picks-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_NAME=nfl_picks
+      - DB_USER=postgres
+      - DB_PASSWORD=password123
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - NFL_API_KEY=your-nfl-api-key-here
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - nfl-picks-network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  database:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=nfl_picks
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - nfl-picks-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d nfl_picks"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+networks:
+  nfl-picks-network:
+    driver: bridge
