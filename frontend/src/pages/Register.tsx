@@ -8,6 +8,7 @@ interface RegisterFormData {
   email: string;
   password: string;
   confirmPassword: string;
+  groupCode: string;
 }
 
 const Register: React.FC = () => {
@@ -32,7 +33,7 @@ const Register: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      await registerUser(data.username, data.email, data.password);
+      await registerUser(data.username, data.email, data.password, data.groupCode);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally {
@@ -50,6 +51,9 @@ const Register: React.FC = () => {
           <p className="mt-2 text-center text-sm text-gray-600">
             Create your account
           </p>
+          <p className="mt-1 text-center text-xs text-blue-600">
+            Test group code: <strong>TEST2025</strong>
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           {error && (
@@ -59,6 +63,24 @@ const Register: React.FC = () => {
           )}
           
           <div className="space-y-4">
+            <div>
+              <input
+                {...register('groupCode', { 
+                  required: 'Group code is required',
+                  minLength: {
+                    value: 6,
+                    message: 'Group code must be at least 6 characters'
+                  }
+                })}
+                type="text"
+                placeholder="Group Code"
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              />
+              {errors.groupCode && (
+                <p className="mt-1 text-sm text-red-600">{errors.groupCode.message}</p>
+              )}
+            </div>
+            
             <div>
               <input
                 {...register('username', { 

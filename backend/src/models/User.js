@@ -28,6 +28,15 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
     field: 'password_hash'
+  },
+  groupId: {
+    type: DataTypes.UUID,
+    allowNull: false,
+    field: 'group_id',
+    references: {
+      model: 'groups',
+      key: 'id'
+    }
   }
 }, {
   tableName: 'users',

@@ -5,9 +5,12 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get overall season leaderboard
+// Get overall season leaderboard (group-scoped)
 router.get('/', auth, async (req, res) => {
   try {
+    // Get current user's group
+    const currentUser = await User.findByPk(req.user.id);
+    
     const leaderboard = await Pick.findAll({
       attributes: [
         'userId',
@@ -17,7 +20,10 @@ router.get('/', auth, async (req, res) => {
       include: [{
         model: User,
         as: 'user',
-        attributes: ['username']
+        attributes: ['username'],
+        where: {
+          groupId: currentUser.groupId // Only users in the same group
+        }
       }],
       where: {
         isCorrect: {
@@ -43,7 +49,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Get weekly leaderboard
+// Get weekly leaderboard (group-scoped)
 router.get('/week/:week', auth, async (req, res) => {
   try {
     const week = parseInt(req.params.week);
@@ -51,6 +57,9 @@ router.get('/week/:week', auth, async (req, res) => {
     if (week < 1 || week > 18) {
       return res.status(400).json({ message: 'Invalid week number' });
     }
+
+    // Get current user's group
+    const currentUser = await User.findByPk(req.user.id);
 
     const weeklyLeaderboard = await Pick.findAll({
       attributes: [
@@ -61,7 +70,10 @@ router.get('/week/:week', auth, async (req, res) => {
       include: [{
         model: User,
         as: 'user',
-        attributes: ['username']
+        attributes: ['username'],
+        where: {
+          groupId: currentUser.groupId // Only users in the same group
+        }
       }],
       where: {
         weekNumber: week,

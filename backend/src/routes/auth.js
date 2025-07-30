@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { User } = require('../models');
+const { User, Group, GroupCode } = require('../models');
 const { generateToken } = require('../utils/jwt');
 const auth = require('../middleware/auth');
 
@@ -16,11 +16,31 @@ router.get('/test', (req, res) => {
 router.post('/register', async (req, res) => {
   console.log('🚀 Register endpoint hit!', { body: req.body });
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, groupCode } = req.body;
     
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !groupCode) {
       console.log('❌ Missing required fields');
-      return res.status(400).json({ message: 'Username, email, and password are required' });
+      return res.status(400).json({ message: 'Username, email, password, and group code are required' });
+    }
+
+    // Validate group code
+    console.log('🔍 Validating group code:', groupCode);
+    const codeRecord = await GroupCode.findOne({
+      where: { code: groupCode },
+      include: [{
+        model: Group,
+        as: 'group'
+      }]
+    });
+
+    if (!codeRecord) {
+      console.log('❌ Invalid group code');
+      return res.status(400).json({ message: 'Invalid group code' });
+    }
+
+    if (!codeRecord.isValid()) {
+      console.log('❌ Group code expired or inactive');
+      return res.status(400).json({ message: 'Group code is expired or inactive' });
     }
 
     // Check if user already exists
@@ -39,6 +59,18 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    // Check group member limit
+    if (codeRecord.group.maxMembers) {
+      const memberCount = await User.count({
+        where: { groupId: codeRecord.groupId }
+      });
+      
+      if (memberCount >= codeRecord.group.maxMembers) {
+        console.log('❌ Group is full');
+        return res.status(400).json({ message: 'Group is full' });
+      }
+    }
+
     // Hash password manually
     console.log('🔒 Hashing password manually...');
     const passwordHash = await bcrypt.hash(password, 12);
@@ -48,16 +80,22 @@ router.post('/register', async (req, res) => {
     const user = await User.create({
       username,
       email,
-      passwordHash
+      passwordHash,
+      groupId: codeRecord.groupId
     });
 
+    // Increment code usage
+    await codeRecord.increment('usageCount');
+    console.log('📈 Code usage incremented');
+
     const token = generateToken(user.id);
-    console.log('✅ User created successfully:', user.username);
+    console.log('✅ User created successfully:', user.username, 'in group:', codeRecord.group.name);
 
     res.status(201).json({
       message: 'User created successfully',
       token,
-      user: user.toJSON()
+      user: user.toJSON(),
+      group: codeRecord.group
     });
   } catch (error) {
     console.error('❌ Registration error:', error);

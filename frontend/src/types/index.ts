@@ -36,7 +36,7 @@ export interface LeaderboardEntry {
 export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string, groupCode: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }

@@ -15,6 +15,7 @@ const authRoutes = require('./src/routes/auth');
 const gameRoutes = require('./src/routes/games');
 const pickRoutes = require('./src/routes/picks');
 const leaderboardRoutes = require('./src/routes/leaderboard');
+const adminRoutes = require('./src/routes/admin');
 
 // Import services
 const nflAPI = require('./src/services/nflAPI');
@@ -74,6 +75,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/games', gameRoutes);
 app.use('/api/picks', pickRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
