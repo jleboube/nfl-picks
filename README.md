@@ -248,6 +248,8 @@ For issues and questions:
 2. Create a new issue with detailed information
 3. Include logs and error messages when applicable
 
+## Adding Groups
+
 ---
 
 **Note**: This application is designed for the 2025-2026 NFL season. Dates and team information may need updates for future seasons.

@@ -9,6 +9,7 @@ const router = express.Router();
 router.get('/week/:week', auth, async (req, res) => {
   try {
     const week = parseInt(req.params.week);
+    const includeRecords = req.query.includeRecords === 'true';
     
     if (week < 1 || week > 18) {
       return res.status(400).json({ message: 'Invalid week number' });
@@ -28,6 +29,34 @@ router.get('/week/:week', auth, async (req, res) => {
         ignoreDuplicates: true,
         returning: true
       });
+    }
+
+    // If team records are requested, fetch and attach them
+    if (includeRecords && games.length > 0) {
+      const season = nflAPI.getCurrentSeason();
+      const gamesWithRecords = [];
+      
+      for (const game of games) {
+        const gameObj = game.toJSON();
+        
+        try {
+          const [homeRecord, awayRecord] = await Promise.all([
+            nflAPI.getTeamRecord(game.homeTeam, week - 1, season),
+            nflAPI.getTeamRecord(game.awayTeam, week - 1, season)
+          ]);
+          
+          gameObj.homeTeamRecord = `${homeRecord.wins}-${homeRecord.losses}${homeRecord.ties ? `-${homeRecord.ties}` : ''}`;
+          gameObj.awayTeamRecord = `${awayRecord.wins}-${awayRecord.losses}${awayRecord.ties ? `-${awayRecord.ties}` : ''}`;
+        } catch (error) {
+          console.error('Error fetching team records:', error);
+          gameObj.homeTeamRecord = '0-0';
+          gameObj.awayTeamRecord = '0-0';
+        }
+        
+        gamesWithRecords.push(gameObj);
+      }
+      
+      return res.json(gamesWithRecords);
     }
 
     res.json(games);
